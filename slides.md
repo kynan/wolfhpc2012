@@ -11,33 +11,66 @@
 ### Imperial College London
 ### <sup>3</sup> EPCC, University of Edinburgh
 
+!NOTES
+
+Thank you Ram for the kind introduction and thanks to all of you for making it
+here so early. Good morning and welcome, my name is Florian from Imperial
+College London. I would like to present to you today work I've done with a
+number of collaborators on the PyOP2 framework for parallel computations on
+unstructured meshes and specifically how we use PyOP2 to deliver
+performance-portable finite-element simulations and get them in the hand of
+domain specialists.
+
 !SLIDE left
 
 # Computational science is hard
 
 ## Radical paradigm shifts in CSE due to many-core computing
-* Scientists have to rewrite and hand-tune for each emerging platform
+* Scientists have to rewrite and hand-tune scientific codes for each newly emerging platform
 * Barrier: inhibits efficient utilisation of state-of-the-art computational resources
 
-## Generative (meta)programming offers a solution
-* Generate platform-specific implementations instead of hand-coding them
+## Generative (meta)programming is the solution
+* Generate platform-specific implementations from a common source instead of hand-coding them
 * Tailor to characteristics of the hardware and problem
 
 !NOTES
 
-# FEM is a versatile tool for science and engineering
+Many of you I assume are computational scientists and will have experienced
+the radical paradigm shift many-core architectures have brought to the field
+and the challenges we face trying to make efficient use of them. Computational
+science is hard, scientific codes are complex and having to rewrite and
+hand-tune them for a new platform is a daunting, tedious and error-prone task.
+Porting takes a lot of resources and is therefore not always feasible even if
+desired. This creates a significant barrier when it comes to efficient
+utilisation of state-of-the-art computational resources as we see them
+deployed more and more widely. If not overcome, this barrier will inhibit
+progress in computational science in the years to come.
 
-## Tsunami simulation of the Hokkaido-Nansei-Oki tsunami of 1993
-
-<iframe width="640" height="360" src="http://www.youtube.com/embed/Y6mM_PCNhq0?rel=0" frameborder="0" allowfullscreen></iframe>
-
-The simulation was carried out with the [Fluidity multi-phase CFD code](http://amcg.ese.ic.ac.uk/index.php?title=FLUIDITY) solving the non-hydrostatic Navier-Stokes equations, using a [free surface and wetting and drying algorithm](http://amcg.ese.ic.ac.uk/index.php?title=Wetting_and_Drying) (courtesy [Simon Funke](http://www3.imperial.ac.uk/people/s.funke09/)).
+Fortunately there is a solution to overcoming this challenge, which is
+generative metaprogramming. By that we mean automatically generating a variety
+of platform-specific implementations from a single common source.  Ideally
+this specification is at a much higher level of abstraction than the low-level
+implementation to be generated. Generating code at runtime we can not only
+tailor to the characteristics of the hardware we want to run on but also the
+problem we want to solve.
 
 !SLIDE huge
 
 # The challenge
 
-> How do we get performance portability for the finite element method without sacrificing generality?
+> How do we get performance-portable finite element solvers that are
+efficient, generic and easy to use in the hands of domain scientists?
+
+!NOTES
+
+The specific challenge I want to address today is performance-portability for the
+finite element method. What we really want to do is get efficient, generic and
+easy-to-use finite element solvers in the hands of domain scientists.
+
+You'll notice that I use generality and efficiency in the same sentence. These
+are goals that are usually seen as conflicting, but the strategies and tools I
+am going to show you now allow us to attain both of these conflicting goals at
+the same time.
 
 !SLIDE left
 
@@ -52,6 +85,11 @@ The simulation was carried out with the [Fluidity multi-phase CFD code](http://a
 ## Harness the power of DSLs
 ... for generative, instead of transformative optimisations
 
+!NOTES
+
+The strategy is building the right set of layered abstractions to isolate
+numerical methods from their mapping to hardware.
+
 !SLIDE left
 
 # The tools
@@ -64,6 +102,12 @@ The simulation was carried out with the [Fluidity multi-phase CFD code](http://a
 
 ... encapsulates *specialist expertise* to deliver *problem- and platform-specific optimisations*
 
+## Just-in-time (JIT) compilation
+
+... makes *problem-specific* generated code *transparently* available to the application at runtime
+
+!NOTES
+
 ## In combination, they
 
 * raise the level of abstraction and incorporate domain-specific knowledge
@@ -71,13 +115,17 @@ The simulation was carried out with the [Fluidity multi-phase CFD code](http://a
 * capture design spaces and open optimisation spaces
 * enable reuse of code generation and optimisation expertise and tool chains
 
-!SLIDE huge
+!SLIDE
 
-# The big picture
+# Tool chain overview
+
+![Tool chain overview](images/mapdes_abstraction_layers_overview.svg)
 
 !SLIDE
 
-}}} images/mapdes_abstraction_layers_overview.svg
+# An expert for each layer
+
+![An expert for each layer](images/mapdes_abstraction_layers_overview_users.svg)
 
 !SLIDE huge
 
@@ -87,9 +135,12 @@ The simulation was carried out with the [Fluidity multi-phase CFD code](http://a
 
 !SLIDE left
 
-# FFC<sup>1</sup> takes equations in UFL
+# FFC<sup>1</sup> takes UFL<sup>2</sup> equations
 
-## Helmholtz equation
+The weak form of the Helmholtz equation
+
+![Helmholtz equation](images/helmholtz_equation.svg)
+is expressed in UFL as follows:
 @@@ python
 f = state.scalar_fields["Tracer"]
 
@@ -104,9 +155,13 @@ L = v*f*dx
 solve(a == L, f)
 @@@
 
-<sub><sup>1</sup> [FFC](https://launchpad.net/ffc) is the FEniCS Form Compiler developed by the [FEniCS project](http://fenicsproject.org/)</sub>
+<sub><sup>1</sup> [FFC](https://launchpad.net/ffc) is the FEniCS Form
+Compiler,
+<sup>2</sup> [UFL](https://launchpad.net/UFL) is the Unified Form Language from the [FEniCS project](http://fenicsproject.org/)</sub>
 
 !NOTES
+
+<span class="latex">\int_\Omega \nabla v \cdot \nabla u - \lambda v u ~\dx = \int_{\Omega} v f ~\dx</span>
 
 ## Fluidity extensions
 
@@ -119,12 +174,15 @@ solve(a == L, f)
 
 ## Helmholtz OP2 kernel
 @@@ clike
+// A - local tensor to assemble
+// x - local coordinates
 void kernel(double A[1][1], double *x[2],
             int j, int k) {
-  // Kij - Jacobian determinant
   // FE0 - Shape functions
   // Dij - Shape function derivatives
+  // Kij - Jacobian inverse / determinant
   // W3  - Quadrature weights
+  // det - Jacobian determinant
   for (unsigned int ip = 0; ip < 3; ip++) {
     A[0][0] += (FE0[ip][j] * FE0[ip][k] * (-1.0)
       + (((K00 * D10[ip][j] + K10 * D01[ip][j]))
@@ -151,6 +209,11 @@ void kernel(double A[1][1], double *x[2],
 * **Sets** of entities (e.g. nodes, edges, faces)
 * **Mappings** between sets (e.g. from edges to nodes)
 * **Datasets** holding data on a set (e.g. fields in finite-element terms)
+![PyOP2 mesh](images/op2_mesh.svg)
+
+!SLIDE left
+
+# Parallel computations on mesh entities in PyOP2
 
 ## Mesh computations as parallel loops
 
@@ -165,7 +228,7 @@ void kernel(double A[1][1], double *x[2],
 
 !SLIDE left
 
-# PyOP2 for finite-element computations
+# PyOP2 for FE computations
 
 ## Finite element local assembly
 ... means computing the *same kernel* for *every* mesh entity (cell, facet): a perfect match for the PyOP2 abstraction
@@ -174,9 +237,8 @@ void kernel(double A[1][1], double *x[2],
 * controls whether/how/when a matrix is assembled
 * local assembly kernel is *translated* for and *efficiently executed* on the target architecture
 
-## Global asssembly and linear algebra operations
-... implemented as a thin wrapper on top of backend-specific linear algebra packages:  
-*PETSc4py* on the CPU, *Cusp* on the GPU
+## Global asssembly and linear algebra
+... implemented as a thin wrapper on top of backend-specific linear algebra packages: *PETSc4py* on the CPU, *Cusp* on the GPU
 
 !SLIDE left
 
@@ -185,10 +247,10 @@ void kernel(double A[1][1], double *x[2],
 @@@ python
 from pyop2 import op2, ffc_interface
 
-def solve(A, x, b):
+def solve(equation, x):
     # Generate kernels for matrix and rhs assembly
-    mass = ffc_interface.compile_form(A, "mass")[0]
-    rhs  = ffc_interface.compile_form(b, "rhs")[0]
+    mass = ffc_interface.compile_form(equation.lhs, "mass")[0]
+    rhs  = ffc_interface.compile_form(equation.rhs, "rhs")[0]
 
     # Extract coordinates (coords) and forcing function (f_vals)
 
@@ -197,7 +259,7 @@ def solve(A, x, b):
     mat = op2.Mat(sparsity, numpy.float64)
     f = op2.Dat(nodes, 1, f_vals, numpy.float64)
 
-    # Assemble and solve
+    # Assemble lhs, rhs and solve linear system
     op2.par_loop(mass, elements(3,3),
              mat((elem_node[op2.i[0]], elem_node[op2.i[1]]), op2.INC),
              coords(elem_node, op2.READ))
@@ -207,8 +269,25 @@ def solve(A, x, b):
              coords(elem_node, op2.READ),
              f(elem_node, op2.READ))
 
-    op2.solve(mat, b, x)
+    op2.solve(mat, x, b)
 @@@
+
+!SLIDE left
+
+# Interfacing PyOP2 to Fluidity
+
+## Fluidity
+![Backward-facing step](images/BackStep.png)
+
+* open source, general purpose, multi-phase computational fluid dynamics code with large international userbase
+* developed at [AMCG](http://amcg.ese.ic.ac.uk/) at Imperial College
+* XML-based configuration files with GUI editor
+* existing interface to access fields from Python
+
+## Interfacing PyOP2
+* additional equation type *UFL* alongside Fluidity's built-in equations, where user provides custom UFL code
+* call PyOP2 instead of Fluidity's built-in advection-diffusion solver
+* create PyOP2 data structures for accessed fields on the fly
 
 !SLIDE left
 
@@ -218,8 +297,6 @@ def solve(A, x, b):
 
 ![Fluidity-UFL-PyOP2-toolchain](images/fluidity_pyop2_pipeline.svg)
 
-Instead of calling Fluidity's built-in advection-diffusion solver:
-
 * Shell out to Python, execute the user's UFL equation
 * FFC generates C++ code for local assembly of FE forms
 * Instant JIT-compiles kernels and the parallel loops invoking them
@@ -227,32 +304,27 @@ Instead of calling Fluidity's built-in advection-diffusion solver:
 !NOTES
 * FFC + Instant invocations are cached
 
-!SLIDE huge
-
-# Preliminary performance results
-
 !SLIDE left
 
-# Experimental setup
+# Preliminary benchmarks
 
-##Solver
+Measure total time to solution for 100 time steps of an advection-diffusion
+test case; matrix/vector re-assembled every time step. 
+
+### Solver
 CG with Jacobi preconditioning using PETSc 3.3 (PyOP2), 3.2 (DOLFIN)
 
-##CPU
+### Host machine
 2x Intel Xeon E5650 Westmere 6-core (HT off), 48GB RAM
 
-##GPU
+### GPU
 NVIDIA GeForce GTX680 (Kepler)
 
-##Mesh
+### Mesh
 2D unit square meshed with triangles (200 - 204800 elements)
 
-##Dolfin
-Revision 6906, Tensor representation, CPP optimisations on, form compiler optimisations off
-
-!SLIDE huge
-
-# Single core
+### Dolfin
+Revision 7122, Tensor representation, CPP optimisations on
 
 !SLIDE
 
@@ -261,10 +333,6 @@ Revision 6906, Tensor representation, CPP optimisations on, form compiler optimi
 !SLIDE
 
 }}} images/seq_speedup_linear.svg
-
-!SLIDE huge
-
-# Parallel
 
 !SLIDE
 
@@ -276,21 +344,37 @@ Revision 6906, Tensor representation, CPP optimisations on, form compiler optimi
 
 !SLIDE left
 
+# Conclusions & future work
+
+## Conclusions
+* Designed two-layer abstraction for FEM computation from high-level sources
+* Runtime code generation and just-in-time compilation provide performance portability for multiple backends
+* Demonstrated usability and performance through integration with CFD-code Fluidity
+
+## Future Work
+* MPI support (already available in OP2)
+* Tune OpenCL backend, add AVX backend
+* Auto-tuning 
+
+!SLIDE left
+
 # Resources
 
-All the code mentioned is open source and available on *GitHub* and *Launchpad*. Try it!
+* All the code is open source on *GitHub* and *Launchpad*. Try it!
+* We're looking for contributors and collaborators
+* Email: <f.rathgeber@imperial.ac.uk>
 
-## PyOP2
+### PyOP2
 <https://github.com/OP2/PyOP2>
 
-## FFC
+### FFC
 <https://code.launchpad.net/~mapdes/ffc/pyop2>
 
-## Fluidity
+### Fluidity
 <https://code.launchpad.net/~fluidity-core/fluidity/pyop2>
 
-## Benchmarks
+### Benchmarks
 <https://github.com/OP2/PyOP2_benchmarks>
 
-## This talk
+### This talk
 <http://kynan.github.com/wolfhpc2012>
