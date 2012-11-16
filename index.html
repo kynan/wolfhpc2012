@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PyOP2: A High-Level Framework for Performance-Portable Simulations on Unstructured Meshes</title>
+    <meta charset='utf-8' />
+    <meta content='width=1024, user-scalable=no' name='viewport' />
+    <!-- deck.js's core css -->
+    <link href="deck.js/core/deck.core.css" rel="stylesheet" type="text/css"/>
+    <!-- deck.js extension CSS files -->
+    <link href="deck.js/extensions/goto/deck.goto.css" rel="stylesheet" type="text/css"/>
+    <link href="deck.js/extensions/menu/deck.menu.css" rel="stylesheet" type="text/css"/>
+    <link href="deck.js/extensions/navigation/deck.navigation.css" rel="stylesheet" type="text/css"/>
+    <link href="deck.js/extensions/hash/deck.hash.css" rel="stylesheet" type="text/css"/>
+    <link href="deck.js/extensions/scale/deck.scale.css" rel="stylesheet" type="text/css"/>
+    <link href="deck.js/extensions/codemirror/deck.codemirror.css" rel="stylesheet" type="text/css"/>
+    <link href="deck.js/extensions/status/deck.status.css" rel="stylesheet" type="text/css"/>
+    <!-- all css in the css dir: Keydown CSS, your custom CSS, and themes from deck.js -->
+    <link href="css/keydown.css" rel="stylesheet" type="text/css"/>
+    <link href="css/default.css" rel="stylesheet" type="text/css"/>
+    <link href="css/swiss.css" rel="stylesheet" type="text/css"/>
+    <link href="css/slides.css" rel="stylesheet" type="text/css"/>
+    <link href="css/horizontal-slide.css" rel="stylesheet" type="text/css"/>
+    <!-- Modernizr (provided for legacy browsers) -->
+    <script src="deck.js/modernizr.custom.js" type="text/javascript"></script>
+  </head>
+  <body class='deck-container keydown'>
+    <section class='left slide title'>
+      <div class='spacer top'></div>
+      <div class='content'>
+        <h1>PyOP2: A High-Level Framework for Performance-Portable Simulations on Unstructured Meshes</h1>
+
+        <h2>Florian Rathgeber<sup>1</sup>, Graham Markall<sup>1</sup>, Lawrence Mitchell<sup>3</sup>, Nicolas Loriant<sup>1</sup>, David Ham<sup>1,2</sup>, Carlo Bertolli<sup>1</sup>, Paul Kelly<sup>1</sup></h2>
+
+        <h3><sup>1</sup> Department of Computing</h3>
+
+        <h3><sup>2</sup> Grantham Institute for Climate Change</h3>
+
+        <h3>Imperial College London</h3>
+
+        <h3><sup>3</sup> EPCC, University of Edinburgh</h3>
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='left slide'>
+  <div class='spacer top'></div>
+  <div class='content'>
+    <h1>Computational science is hard</h1>
+
+<h2>Radical paradigm shifts in CSE due to many-core computing</h2>
+
+<ul>
+<li>Scientists have to rewrite and hand-tune scientific codes for each newly emerging platform</li>
+<li>Barrier: inhibits efficient utilisation of state-of-the-art computational resources</li>
+</ul>
+
+
+<h2>Generative (meta)programming is the solution</h2>
+
+<ul>
+<li>Generate platform-specific implementations from a common source instead of hand-coding them</li>
+<li>Tailor to characteristics of the hardware and problem</li>
+</ul>
+  </div>
+  <div class='spacer bottom'></div>
+</section>
+    <section class='huge slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+        <h1>The challenge</h1>
+
+        <blockquote><p>How do we get performance-portable finite element solvers that are
+        efficient, generic and easy to use in the hands of domain scientists?</p></blockquote>
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='left slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+        <h1>The strategy</h1>
+
+        <h2>Get the abstractions right</h2>
+
+        <p>... to isolate numerical methods from their mapping to hardware</p>
+
+        <h2>Start at the top, work your way down</h2>
+
+        <p>... and make decisions at the highest abstraction level possible</p>
+
+        <h2>Harness the power of DSLs</h2>
+
+        <p>... for generative, instead of transformative optimisations</p>
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='left slide'>
+  <div class='spacer top'></div>
+  <div class='content'>
+    <h1>The tools</h1>
+
+<h2>Embedded domain-specific languages</h2>
+
+<p>... capture and <em>efficiently express characteristics</em> of the application/problem domain</p>
+
+<h2>Runtime code generation</h2>
+
+<p>... encapsulates <em>specialist expertise</em> to deliver <em>problem- and platform-specific optimisations</em></p>
+
+<h2>Just-in-time (JIT) compilation</h2>
+
+<p>... makes <em>problem-specific</em> generated code <em>transparently</em> available to the application at runtime</p>
+  </div>
+  <div class='spacer bottom'></div>
+</section>
+    <section class='slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+        <h1>Tool chain overview</h1>
+
+        <p><img src="images/mapdes_abstraction_layers_overview.svg" alt="Tool chain overview" /></p>
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+        <h1>An expert for each layer</h1>
+
+        <p><img src="images/mapdes_abstraction_layers_overview_users.svg" alt="An expert for each layer" /></p>
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='huge slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+        <h1>Higher level abstraction</h1>
+
+        <h2>From the equation to the finite element implementation</h2>
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='left slide'>
+  <div class='spacer top'></div>
+  <div class='content'>
+    <h1>FFC<sup>1</sup> takes UFL<sup>2</sup> equations</h1>
+
+<p>The weak form of the Helmholtz equation</p>
+
+<p><img src="images/helmholtz_equation.svg" alt="Helmholtz equation" />
+is expressed in UFL as follows:
+<textarea class='code' display='none' mode='python'>f = state.scalar_fields["Tracer"]&#x000A;&#x000A;v = TestFunction(f)&#x000A;u = TrialFunction(f)&#x000A;&#x000A;lmbda = 1&#x000A;a = (dot(grad(v), grad(u)) - lmbda * v * u) * dx&#x000A;&#x000A;L = v*f*dx&#x000A;&#x000A;solve(a == L, f)</textarea>
+</p>
+
+<p><sub><sup>1</sup> <a href="https://launchpad.net/ffc">FFC</a> is the FEniCS Form
+Compiler,
+<sup>2</sup> <a href="https://launchpad.net/UFL">UFL</a> is the Unified Form Language from the <a href="http://fenicsproject.org/">FEniCS project</a></sub></p>
+  </div>
+  <div class='spacer bottom'></div>
+</section>
+    <section class='left slide'>
+  <div class='spacer top'></div>
+  <div class='content'>
+    <h1>... and generates local assembly kernels</h1>
+
+    <h2>Helmholtz OP2 kernel</h2>
+
+    <p><textarea class='code' display='none' mode='clike'>// A - local tensor to assemble&#x000A;// x - local coordinates&#x000A;void kernel(double A[1][1], double *x[2],&#x000A;            int j, int k) {&#x000A;  // FE0 - Shape functions&#x000A;  // Dij - Shape function derivatives&#x000A;  // Kij - Jacobian inverse / determinant&#x000A;  // W3  - Quadrature weights&#x000A;  // det - Jacobian determinant&#x000A;  for (unsigned int ip = 0; ip < 3; ip++) {&#x000A;    A[0][0] += (FE0[ip][j] * FE0[ip][k] * (-1.0)&#x000A;      + (((K00 * D10[ip][j] + K10 * D01[ip][j]))&#x000A;        *((K00 * D10[ip][k] + K10 * D01[ip][k]))&#x000A;      + ((K01 * D10[ip][j] + K11 * D01[ip][j]))&#x000A;        *((K01 * D10[ip][k] + K11 * D01[ip][k]))&#x000A;      )) * W3[ip] * det;&#x000A;  }&#x000A;}</textarea>
+</p>
+  </div>
+  <div class='spacer bottom'></div>
+</section>
+    <section class='huge slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+        <h1>Lower level abstraction</h1>
+
+        <h2>From the finite element implementation to its efficient parallel execution</h2>
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='left slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+        <h1>PyOP2 – a high-level framework for unstructured mesh computations</h1>
+
+        <h2>Abstractions for unstructured meshes</h2>
+
+        <ul>
+        <li><strong>Sets</strong> of entities (e.g. nodes, edges, faces)</li>
+        <li><strong>Mappings</strong> between sets (e.g. from edges to nodes)</li>
+        <li><strong>Datasets</strong> holding data on a set (e.g. fields in finite-element terms)
+        <img src="images/op2_mesh.svg" alt="PyOP2 mesh" /></li>
+        </ul>
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='left slide'>
+  <div class='spacer top'></div>
+  <div class='content'>
+    <h1>Parallel computations on mesh entities in PyOP2</h1>
+
+<h2>Mesh computations as parallel loops</h2>
+
+<ul>
+<li>execute a <em>kernel</em> for all members of an iteration set in arbitrary order</li>
+<li>datasets accessed through at most one level of indirection via a mapping</li>
+<li><em>access descriptors</em> specify which data is passed to the kernel and how it is addressed</li>
+</ul>
+
+
+<h2>Multiple hardware backends via <em>runtime code generation</em></h2>
+
+<ul>
+<li>partioning/colouring for efficient scheduling and execution on different hardware</li>
+<li>currently supports CUDA/OpenCL, MPI in development, AVX support planned</li>
+</ul>
+  </div>
+  <div class='spacer bottom'></div>
+</section>
+    <section class='left slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+        <h1>PyOP2 for FE computations</h1>
+
+        <h2>Finite element local assembly</h2>
+
+        <p>... means computing the <em>same kernel</em> for <em>every</em> mesh entity (cell, facet): a perfect match for the PyOP2 abstraction</p>
+
+        <h2>PyOP2 abstracts away data marshaling and parallel execution</h2>
+
+        <ul>
+        <li>controls whether/how/when a matrix is assembled</li>
+        <li>local assembly kernel is <em>translated</em> for and <em>efficiently executed</em> on the target architecture</li>
+        </ul>
+
+
+        <h2>Global asssembly and linear algebra</h2>
+
+        <p>... implemented as a thin wrapper on top of backend-specific linear algebra packages: <em>PETSc4py</em> on the CPU, <em>Cusp</em> on the GPU</p>
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='left slide'>
+  <div class='spacer top'></div>
+  <div class='content'>
+    <h1>Finite element assembly and solve in PyOP2</h1>
+
+    <p><textarea class='code' display='none' mode='python'>from pyop2 import op2, ffc_interface&#x000A;&#x000A;def solve(equation, x):&#x000A;    # Generate kernels for matrix and rhs assembly&#x000A;    mass = ffc_interface.compile_form(equation.lhs, "mass")[0]&#x000A;    rhs  = ffc_interface.compile_form(equation.rhs, "rhs")[0]&#x000A;&#x000A;    # Extract coordinates (coords) and forcing function (f_vals)&#x000A;&#x000A;    # Construct OP2 matrix to assemble into&#x000A;    sparsity = op2.Sparsity((elem_node, elem_node), sparsity_dim) &#x000A;    mat = op2.Mat(sparsity, numpy.float64)&#x000A;    f = op2.Dat(nodes, 1, f_vals, numpy.float64)&#x000A;&#x000A;    # Assemble lhs, rhs and solve linear system&#x000A;    op2.par_loop(mass, elements(3,3),&#x000A;             mat((elem_node[op2.i[0]], elem_node[op2.i[1]]), op2.INC),&#x000A;             coords(elem_node, op2.READ))&#x000A;&#x000A;    op2.par_loop(rhs, elements(3),&#x000A;             b(elem_node[op2.i[0]], op2.INC),&#x000A;             coords(elem_node, op2.READ),&#x000A;             f(elem_node, op2.READ))&#x000A;&#x000A;    op2.solve(mat, x, b)</textarea>
+</p>
+  </div>
+  <div class='spacer bottom'></div>
+</section>
+    <section class='left slide'>
+  <div class='spacer top'></div>
+  <div class='content'>
+    <h1>Interfacing PyOP2 to Fluidity</h1>
+
+<h2>Fluidity</h2>
+
+<p><img src="images/BackStep.png" alt="Backward-facing step" /></p>
+
+<ul>
+<li>open source, general purpose, multi-phase computational fluid dynamics code with large international userbase</li>
+<li>developed at <a href="http://amcg.ese.ic.ac.uk/">AMCG</a> at Imperial College</li>
+<li>XML-based configuration files with GUI editor</li>
+<li>existing interface to access fields from Python</li>
+</ul>
+
+
+<h2>Interfacing PyOP2</h2>
+
+<ul>
+<li>additional equation type <em>UFL</em> alongside Fluidity's built-in equations, where user provides custom UFL code</li>
+<li>call PyOP2 instead of Fluidity's built-in advection-diffusion solver</li>
+<li>create PyOP2 data structures for accessed fields on the fly</li>
+</ul>
+  </div>
+  <div class='spacer bottom'></div>
+</section>
+    <section class='left slide'>
+  <div class='spacer top'></div>
+  <div class='content'>
+    <h1>UFL equations in Fluidity</h1>
+
+<h2>For each UFL equation in each time step:</h2>
+
+<p><img src="images/fluidity_pyop2_pipeline.svg" alt="Fluidity-UFL-PyOP2-toolchain" /></p>
+
+<ul>
+<li>Shell out to Python, execute the user's UFL equation</li>
+<li>FFC generates C++ code for local assembly of FE forms</li>
+<li>Instant JIT-compiles kernels and the parallel loops invoking them</li>
+</ul>
+  </div>
+  <div class='spacer bottom'></div>
+</section>
+    <section class='left slide'>
+  <div class='spacer top'></div>
+  <div class='content'>
+    <h1>Preliminary benchmarks</h1>
+
+<p>Measure total time to solution for 100 time steps of an advection-diffusion
+test case; matrix/vector re-assembled every time step.</p>
+
+<h3>Solver</h3>
+
+<p>CG with Jacobi preconditioning using PETSc 3.3 (PyOP2), 3.2 (DOLFIN)</p>
+
+<h3>Host machine</h3>
+
+<p>2x Intel Xeon E5650 Westmere 6-core (HT off), 48GB RAM</p>
+
+<h3>GPU</h3>
+
+<p>NVIDIA GeForce GTX680 (Kepler)</p>
+
+<h3>Mesh</h3>
+
+<p>2D unit square meshed with triangles (200 - 204800 elements)</p>
+
+<h3>Dolfin</h3>
+
+<p>Revision 7122, Tensor representation, CPP optimisations on</p>
+  </div>
+  <div class='spacer bottom'></div>
+</section>
+    <section class='full-background seq_runtime_linear slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='full-background seq_speedup_linear slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='cuda_runtime_linear full-background slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='cuda_speedup_linear full-background slide'>
+      <div class='spacer top'></div>
+      <div class='content'>
+
+      </div>
+      <div class='spacer bottom'></div>
+    </section>
+    <section class='left slide'>
+  <div class='spacer top'></div>
+  <div class='content'>
+    <h1>Conclusions &amp; future work</h1>
+
+<h2>Conclusions</h2>
+
+<ul>
+<li>Designed two-layer abstraction for FEM computation from high-level sources</li>
+<li>Runtime code generation and just-in-time compilation provide performance portability for multiple backends</li>
+<li>Demonstrated usability and performance through integration with CFD-code Fluidity</li>
+</ul>
+
+
+<h2>Future Work</h2>
+
+<ul>
+<li>MPI support (already available in OP2)</li>
+<li>Tune OpenCL backend, add AVX backend</li>
+<li>Auto-tuning</li>
+</ul>
+  </div>
+  <div class='spacer bottom'></div>
+</section>
+    <section class='left slide'>
+  <div class='spacer top'></div>
+  <div class='content'>
+    <h1>Resources</h1>
+
+<ul>
+<li>All the code is open source on <em>GitHub</em> and <em>Launchpad</em>. Try it!</li>
+<li>We're looking for contributors and collaborators</li>
+<li>Email: <a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#x6f;&#58;&#102;&#x2e;&#x72;&#x61;&#116;&#x68;&#x67;&#101;&#98;&#x65;&#x72;&#64;&#105;&#x6d;&#112;&#101;&#114;&#105;&#x61;&#x6c;&#46;&#97;&#99;&#46;&#x75;&#x6b;">&#102;&#x2e;&#114;&#x61;&#x74;&#104;&#103;&#101;&#x62;&#101;&#114;&#x40;&#x69;&#109;&#112;&#101;&#x72;&#105;&#x61;&#x6c;&#46;&#97;&#x63;&#x2e;&#x75;&#x6b;</a></li>
+</ul>
+
+
+<h3>PyOP2</h3>
+
+<p><a href="https://github.com/OP2/PyOP2">https://github.com/OP2/PyOP2</a></p>
+
+<h3>FFC</h3>
+
+<p><a href="https://code.launchpad.net/~mapdes/ffc/pyop2">https://code.launchpad.net/~mapdes/ffc/pyop2</a></p>
+
+<h3>Fluidity</h3>
+
+<p><a href="https://code.launchpad.net/~fluidity-core/fluidity/pyop2">https://code.launchpad.net/~fluidity-core/fluidity/pyop2</a></p>
+
+<h3>Benchmarks</h3>
+
+<p><a href="https://github.com/OP2/PyOP2_benchmarks">https://github.com/OP2/PyOP2_benchmarks</a></p>
+
+<h3>This talk</h3>
+
+<p><a href="http://kynan.github.com/wolfhpc2012">http://kynan.github.com/wolfhpc2012</a></p>
+  </div>
+  <div class='spacer bottom'></div>
+</section>
+    <!-- deck.js navigation extension -->
+    <a class='deck-prev-link' href='#' title='Previous'>&#8592;</a>
+    <a class='deck-next-link' href='#' title='Next'>&#8594;</a>
+    <!-- deck.js hash extension -->
+    <a class='deck-permalink' href='.' title='Permalink to this slide'>#</a>
+    <!-- deck.js status extension -->
+    <p class='deck-status'>
+      <span class='deck-status-current'></span>
+      /
+      <span class='deck-status-total'></span>
+    </p>
+    <!-- jQuery & deck.js -->
+    <script src="deck.js/jquery-1.7.2.min.js" type="text/javascript"></script>
+    <script src="deck.js/core/deck.core.js" type="text/javascript"></script>
+    <!-- deck.js extension JS files -->
+    <script src="deck.js/extensions/codemirror/codemirror.js" type="text/javascript"></script>
+    <script src="deck.js/extensions/codemirror/deck.codemirror.js" type="text/javascript"></script>
+    <script src="deck.js/extensions/codemirror/mode/clike/clike.js" type="text/javascript"></script>
+    <script src="deck.js/extensions/codemirror/mode/python/python.js" type="text/javascript"></script>
+    <script src="deck.js/extensions/goto/deck.goto.js" type="text/javascript"></script>
+    <script src="deck.js/extensions/hash/deck.hash.js" type="text/javascript"></script>
+    <script src="deck.js/extensions/menu/deck.menu.js" type="text/javascript"></script>
+    <script src="deck.js/extensions/navigation/deck.navigation.js" type="text/javascript"></script>
+    <script src="deck.js/extensions/scale/deck.scale.js" type="text/javascript"></script>
+    <script src="deck.js/extensions/status/deck.status.js" type="text/javascript"></script>
+    <!-- your custom JS here, including call to initialize deck.js-codemirror -->
+    <script src="js/2012-09-Multicore-Challenge.js" type="text/javascript"></script>
+    <!-- Initialize the deck. -->
+    <script type='text/javascript'>
+      $(function() { $.deck('.slide'); });
+    </script>
+  </body>
+</html>
