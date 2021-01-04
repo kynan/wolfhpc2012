@@ -157,7 +157,7 @@ solve(a == L, f)
 
 <sub><sup>1</sup> [FFC](https://launchpad.net/ffc) is the FEniCS Form
 Compiler,
-<sup>2</sup> [UFL](https://launchpad.net/UFL) is the Unified Form Language from the [FEniCS project](http://fenicsproject.org/)</sub>
+<sup>2</sup> [UFL](https://launchpad.net/UFL) is the Unified Form Language from the [FEniCS project](https://fenicsproject.org/)</sub>
 
 !NOTES
 
@@ -280,7 +280,7 @@ def solve(equation, x):
 ![Backward-facing step](images/BackStep.png)
 
 * open source, general purpose, multi-phase computational fluid dynamics code with large international userbase
-* developed at [AMCG](http://amcg.ese.ic.ac.uk/) at Imperial College
+* developed at [AMCG](https://www.imperial.ac.uk/earth-science/research/research-groups/amcg/) at Imperial College
 * XML-based configuration files with GUI editor
 * existing interface to access fields from Python
 
