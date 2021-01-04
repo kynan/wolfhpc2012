@@ -362,7 +362,7 @@ Revision 7122, Tensor representation, CPP optimisations on
 
 * All the code is open source on *GitHub* and *Launchpad*. Try it!
 * We're looking for contributors and collaborators
-* Email: <f.rathgeber@imperial.ac.uk>
+* Contact: Florian Rathgeber [@frathgeber](https://twitter.com/frathgeber)
 
 ### PyOP2
 <https://github.com/OP2/PyOP2>
